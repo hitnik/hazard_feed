@@ -24,7 +24,7 @@ setuptools.setup(
     description="pogoda.by storm warning rss parser",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/hitnik/hazard-feed",
+    url="https://github.com/hitnik/hazard_feed",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
