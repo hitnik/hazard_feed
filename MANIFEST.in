@@ -1,0 +1,5 @@
+include LICENSE
+include README.md
+include requirements.txt
+recursive-include hazard_feed/static *
+recursive-include hazard_feed/templates *
