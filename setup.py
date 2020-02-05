@@ -8,13 +8,13 @@ except ImportError: # for pip <= 9.0.3
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-install_reqs = parse_requirements('requirements.txt', session='hack')
+install_reqs = parse_requirements('./requirements.txt', session='hack')
 
 reqs = [str(ir.req) for ir in install_reqs]
 
 setuptools.setup(
     name="hazard-feed",
-    version="0.1.1",
+    version="0.1.2",
     author="Aleksandr Nikitin",
     author_email="hitnik@gmail.com",
     description="pogoda.by storm warning rss parser",
