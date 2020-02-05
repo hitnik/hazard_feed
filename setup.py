@@ -3,7 +3,11 @@ try: # for pip >= 10
     from pip._internal.req import parse_requirements
 except ImportError: # for pip <= 9.0.3
     from pip.req import parse_requirements
-from pip.download import PipSession
+try:  # pip >= 10
+    from pip._internal.download import PipSession
+except ImportError:  # pip <= 9.0.3
+    from pip.download import PipSession
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
