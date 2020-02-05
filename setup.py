@@ -10,7 +10,7 @@ install_reqs = parse_requirements('requirements.txt', session=PipSession())
 reqs = [str(ir.req) for ir in install_reqs]
 
 setuptools.setup(
-    name="hazard_feed",
+    name="hazard-feed",
     version="0.1",
     author="Aleksandr Nikitin",
     author_email="hitnik@gmail.com",
