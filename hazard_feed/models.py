@@ -4,6 +4,7 @@ import uuid
 from django.db import models
 from django.core.validators import MaxValueValidator
 from django.utils.translation import gettext_lazy as _
+from tinymce.models import HTMLField
 
 
 class TimeStampBase(models.Model):
@@ -63,3 +64,10 @@ class WeatherRecipients(models.Model):
         verbose_name = _('Weather hazard recipient')
         verbose_name_plural = _('Weather hazard recipients')
 
+class EmailTemplates(models.Model):
+    title = models.CharField(max_length=64, editable=False, unique=True)
+    template = HTMLField(null=True)
+
+    class Meta:
+        verbose_name = _('Email Template')
+        verbose_name_plural = _('Email Templates')

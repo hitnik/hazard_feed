@@ -3,15 +3,18 @@ import feedparser
 import time
 import datetime
 import pytz
-from .models import HazardLevels, HazardFeeds, WeatherRecipients
+from .models import (
+    HazardLevels, HazardFeeds,
+    WeatherRecipients, EmailTemplates
+)
 from django.conf import settings
 import aiosmtplib
 from django.template import loader
 from email.message import EmailMessage
 from bs4 import BeautifulSoup
 from django.apps import apps
+from django.template import Context, Template
 from django.db.utils import OperationalError
-import os
 
 def hazard_level_in_text_find(text):
     """
@@ -49,7 +52,7 @@ def parse_weather_feeds(url):
             )
             feeds_out.append(hazard_feed)
         else:
-            raise Exception('harard level define error')
+            raise Exception('Hazard level define error')
     return feeds_out
 
 def put_feed_to_db(feed):
@@ -65,8 +68,8 @@ def make_weather_hazard_message(feed):
     date = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
     local_tz = pytz.timezone(settings.TIME_ZONE)
     date = date.astimezone(local_tz)
-    template = loader.get_template('hazard_feed/weather_mail.html')
-    context = {'date': date, 'feed': feed}
+    template = Template(EmailTemplates.objects.get(title='weather_mail').template)
+    context = Context({'date': date, 'feed': feed})
     html = template.render(context)
     soup = BeautifulSoup(html, 'html.parser')
     text = soup.get_text()
@@ -91,26 +94,27 @@ async def send_weather_mail(msg, recipients):
     :return:
     """
     config = apps.get_app_config('hazard_feed')
+    if isinstance(recipients, list) and len(recipients) > 0:
+        if config.WEATHER_USE_TSL:
+            await aiosmtplib.send(
+                msg,
+                hostname=config.WEATHER_EMAIL_SMTP_HOST,
+                port=config.WEATHER_EMAIL_SMTP_PORT,
+                use_tls=config.WEATHER_USE_TSL,
+                username=config.WEATHER_EMAIL_HOST_USER,
+                password=config.WEATHER_EMAIL_HOST_PASSWORD,
+                sender=settings.WEATHER_EMAIL_FROM,
+                recipients=recipients
+            )
+        else:
+            await aiosmtplib.send(
+                msg,
+                hostname=config.WEATHER_EMAIL_SMTP_HOST,
+                port=config.WEATHER_EMAIL_SMTP_PORT,
+                username=config.WEATHER_EMAIL_HOST_USER,
+                password=config.WEATHER_EMAIL_HOST_PASSWORD,
+                sender=settings.WEATHER_EMAIL_FROM,
+                recipients=recipients
+            )
 
-    if config.WEATHER_USE_TSL:
-        await aiosmtplib.send(
-            msg,
-            hostname=config.WEATHER_EMAIL_SMTP_HOST,
-            port=config.WEATHER_EMAIL_SMTP_PORT,
-            use_tls=config.WEATHER_USE_TSL,
-            username=config.WEATHER_EMAIL_HOST_USER,
-            password=config.WEATHER_EMAIL_HOST_PASSWORD,
-            sender=settings.WEATHER_EMAIL_FROM,
-            recipients=recipients
-        )
-    else:
-        await aiosmtplib.send(
-            msg,
-            hostname=config.WEATHER_EMAIL_SMTP_HOST,
-            port=config.WEATHER_EMAIL_SMTP_PORT,
-            username=config.WEATHER_EMAIL_HOST_USER,
-            password=config.WEATHER_EMAIL_HOST_PASSWORD,
-            sender=settings.WEATHER_EMAIL_FROM,
-            recipients=recipients
-        )
 # def get_weather_mail():
