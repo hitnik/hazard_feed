@@ -1,0 +1,11 @@
+[
+  {
+    "model": "hazard_feed.RSSFeedUrl",
+    "pk": 1,
+    "fields": {
+      "title": "pogoda.by",
+      "url": "http://www.pogoda.by/rss2/storm.php",
+      "is_active": true
+    }
+  }
+]

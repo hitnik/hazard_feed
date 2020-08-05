@@ -7,8 +7,10 @@ import django_rq
 from rq_scheduler import Scheduler
 from .jobs import parse_feeds
 from .models import WeatherRecipients
-import time
-
+from  django.urls import reverse
+from rest_framework.test import APIRequestFactory
+from .views import *
+from rest_framework.test import APITestCase
 
 class TestHazardFeeds(TestCase):
     fixtures = ['hazard_feed/fixtures/hazard_levels.json']
@@ -35,7 +37,7 @@ class TestHazardFeeds(TestCase):
         msg = make_weather_hazard_message(feeds[0])
         recipients = get_weather_recipients()
         event_loop = asyncio.get_event_loop()
-        event_loop.run_until_complete(send_weather_mail(msg, recipients))
+        event_loop.run_until_complete(send_mail(msg, recipients))
 
     def test_rq(self):
         # queue = django_rq.get_queue('default')
@@ -77,5 +79,36 @@ class TestHazardFeeds(TestCase):
             hazard_level=HazardLevels.objects.get(id=3),
             is_sent=False
         )
-        msg = make_weather_hazard_message(feed)
-        print(msg.get_payload()[0])
+        feed.save()
+
+
+    def test_url_not_rss(self):
+       print(len(parse_weather_feeds('sfsdf','http://tut.by')))
+
+
+    def test_parse(self):
+        list = create_rss_urls_list()
+        print(list)
+        feeds = parse_weather_feeds(*list)
+        print(feeds)
+
+
+class TestAPI(APITestCase):
+
+    def test_subscribe(self):
+        resp = self.client.post(reverse('hazard_feed:subscribe_newsletter'),
+                                {'title': 'test', 'email':'hitnik@gmail.com'},
+                                format='json')
+        self.assertEqual(resp.status_code, 201)
+        print(resp)
+        resp = self.client.post(reverse('hazard_feed:subscribe_newsletter'),
+                                {'title': 'test', 'email': 'hitnik@gmail.com'},
+                                format='json')
+        # self.assertEqual(resp.status_code, 201)
+        print(resp.content)
+
+
+    def test_code_gen(self):
+        resp = self.client.post(reverse('hazard_feed:activate_subscribe'),
+                                {"code": "12345678"}, format='json')
+        print(resp.content)

@@ -13,7 +13,7 @@ class HazardFeedConfig(AppConfig):
      app settings. You must specify settings in your environment
     """
     name = 'hazard_feed'
-    WEATHER_EMAIL_SMTP_HOST = os.getenv('EMAIL_WEATHER_SMTP_HOST')
+    WEATHER_EMAIL_SMTP_HOST = os.getenv('WEATHER_EMAIL_SMTP_HOST')
     WEATHER_USE_TSL = int(os.getenv('WEATHER_USE_TSL', 0))
     WEATHER_EMAIL_SMTP_PORT = os.getenv('WEATHER_EMAIL_SMTP_PORT')
     WEATHER_EMAIL_HOST_USER = os.getenv('WEATHER_EMAIL_HOST_USER')
@@ -33,18 +33,20 @@ class HazardFeedConfig(AppConfig):
         if hasattr(settings, 'WEATHER_EMAIL_HOST_PASSWORD'):
             self.WEATHER_EMAIL_HOST_PASSWORD = settings.WEATHER_EMAIL_HOST_PASSWORD
 
-        from .models import HazardFeeds
-        from .signals import send_hazard_feed_notification
+        from .models import HazardFeeds, EmailActivationCode
+        from .signals import send_hazard_feed_notification, send_activation_mail
         post_save.connect(send_hazard_feed_notification, sender=HazardFeeds)
+        post_save.connect(send_activation_mail, sender=EmailActivationCode)
         from . import jobs
 
         try:
             scheduler = django_rq.get_scheduler('default')
             for job in scheduler.get_jobs():
-                job.delete()
+                if job.func_name == 'hazard_feed.jobs.parse_feeds':
+                    job.delete()
             scheduler.schedule(scheduled_time=datetime.datetime.utcnow() + datetime.timedelta(seconds=5),
                                func=jobs.parse_feeds,
-                               interval=600
+                               interval=600, result_ttl=100
                                )
         except ConnectionError:
             pass
