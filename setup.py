@@ -14,7 +14,7 @@ reqs = [str(ir.req) for ir in install_reqs]
 
 setuptools.setup(
     name="hazard-feed",
-    version="0.1.4.4",
+    version="0.1.4.1",
     author="Aleksandr Nikitin",
     author_email="hitnik@gmail.com",
     description="pogoda.by storm warning rss parser",
