@@ -202,3 +202,7 @@ class Message():
     @classmethod
     def email_deactivation_code(cls, code):
         return cls()._email_code(code, activate=False)
+
+
+def date_from_text_parser(text):
+    pass
