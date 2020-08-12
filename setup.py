@@ -10,11 +10,15 @@ with open("README.md", "r") as fh:
 
 install_reqs = parse_requirements('./requirements.txt', session='hack')
 
-reqs = [str(ir.req) for ir in install_reqs]
+
+try:
+    reqs = [str(ir.req) for ir in install_reqs]
+except:
+    reqs = [str(ir.requirement) for ir in install_reqs]
 
 setuptools.setup(
     name="hazard-feed",
-    version="0.1.4.4",
+    version="0.1.4.5",
     author="Aleksandr Nikitin",
     author_email="hitnik@gmail.com",
     description="pogoda.by storm warning rss parser",
