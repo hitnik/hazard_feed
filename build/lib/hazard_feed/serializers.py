@@ -1,7 +1,6 @@
 from rest_framework import serializers
-from .models import WeatherRecipients
+from .models import WeatherRecipients, HazardFeeds, HazardLevels
 from django.conf import settings
-from rest_framework import status
 from django.core.validators import EmailValidator
 
 
@@ -49,8 +48,25 @@ class SubcribeResponseSerializer(serializers.Serializer):
     token = serializers.CharField()
     code_confirm = serializers.URLField()
 
-
 class SuccesResponseSerializer(serializers.Serializer):
 
     ok = serializers.BooleanField()
     message = serializers.CharField()
+
+class HazardLevelModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = HazardLevels
+        fields = ['id', 'title', 'danger_level',
+                  'color_code', 'description'
+                 ]
+
+class HazardWarningsSerializer(serializers.HyperlinkedModelSerializer):
+    url = serializers.HyperlinkedIdentityField(view_name="hazard_feed:hazard_warnings-detail")
+
+    class Meta:
+        model = HazardFeeds
+        fields = ['id', 'url', 'title', 'external_link', 'summary',
+                  'hazard_level', 'date_start', 'date_end']
+        extra_kwargs = {
+            'hazard_level': {'view_name': 'hazard_feed:hazard_levels-detail'},
+        }

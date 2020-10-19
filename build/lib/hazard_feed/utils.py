@@ -3,6 +3,7 @@ import feedparser
 import time
 import datetime
 import pytz
+import requests
 from .models import (
     HazardLevels, HazardFeeds,
     WeatherRecipients, EmailTemplates,
@@ -10,7 +11,9 @@ from .models import (
 )
 from django.conf import settings
 import aiosmtplib
-from django.template import loader
+import nltk
+import json
+import dateutil.parser
 from email.message import EmailMessage
 from bs4 import BeautifulSoup
 from django.apps import apps
@@ -20,6 +23,7 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from .config import WEATHER_FEED_URL
 from django.contrib.sessions.models import Session
+
 
 def hazard_level_in_text_find(text):
     """
@@ -61,11 +65,15 @@ def parse_weather_feeds(*args):
                     ms = int(time.mktime(feed.published_parsed))
                     date = datetime.datetime.fromtimestamp(ms).replace(tzinfo=pytz.utc)
                     hazard_level = hazard_level_in_text_find(feed.summary)
+                    summary = remove_hazard_level_from_feed(hazard_level, feed.summary)
+                    date_start, date_end = date_from_text_parser(settings.DATE_API, feed.summary)
                     if hazard_level:
                         hazard_feed = HazardFeeds(
                             id=feed.id, date=date, title=feed.title,
-                            link=feed.link, summary=feed.summary,
+                            external_link=feed.link, summary=summary,
                             hazard_level=hazard_level,
+                            date_start=date_start,
+                            date_end=date_end,
                             is_sent=False
                         )
                         feeds_out.append(hazard_feed)
@@ -204,5 +212,34 @@ class Message():
         return cls()._email_code(code, activate=False)
 
 
-def date_from_text_parser(text):
-    pass
+def datetime_parser(json_dict):
+    for (key, value) in json_dict.items():
+        try:
+            json_dict[key] = dateutil.parser.parse(value)
+        except (ValueError, AttributeError):
+            pass
+    return json_dict
+
+def date_from_text_parser(url, text):
+    try:
+        r = requests.post(url, data={'text': text})
+        if r.status_code == 200:
+            d = json.loads(r.content, object_hook=datetime_parser)
+            date_start = datetime.date(d['start'].year, d['start'].month, d['start'].day)
+            date_end = datetime.date(d['end'].year, d['end'].month, d['end'].day)
+            return date_start, date_end
+        else:
+            return None, None
+    except requests.exceptions.ConnectionError:
+        return None, None
+
+
+def remove_hazard_level_from_feed(hazard_level, text):
+    result = ''
+    sentences = nltk.sent_tokenize(text)
+    if hazard_level == None:
+        return text
+    for sentence in sentences:
+        if not re.search(hazard_level.title, sentence):
+            result += sentence
+    return result

@@ -18,7 +18,7 @@ except:
 
 setuptools.setup(
     name="hazard-feed",
-    version="0.1.4.5",
+    version="0.1.5.0",
     author="Aleksandr Nikitin",
     author_email="hitnik@gmail.com",
     description="pogoda.by storm warning rss parser",
