@@ -11,6 +11,7 @@ from  django.urls import reverse
 from rest_framework.test import APIRequestFactory
 from .views import *
 from rest_framework.test import APITestCase
+import datetime
 
 class TestHazardFeeds(TestCase):
     fixtures = ['hazard_feed/fixtures/hazard_levels.json']
@@ -20,9 +21,12 @@ class TestHazardFeeds(TestCase):
 
     def test_put_feed_to_db(self):
         feeds = parse_weather_feeds(WEATHER_FEED_URL)
-        self.assertFalse(put_feed_to_db(feeds[0]))
-        if len(feeds) > 1:
-            self.assertTrue(put_feed_to_db(feeds[1]))
+        put_feed_to_db(feeds[0])
+        f = HazardFeeds.objects.all()
+        for item in f:
+            print(item.summary)
+            print(item.date_start)
+            print(item.date_end)
 
     def test_date_compare(self):
         d1 = datetime.datetime.utcnow()
@@ -95,6 +99,7 @@ class TestHazardFeeds(TestCase):
 
 class TestAPI(APITestCase):
 
+
     def test_subscribe(self):
         resp = self.client.post(reverse('hazard_feed:subscribe_newsletter'),
                                 {'title': 'test', 'email':'hitnik@gmail.com'},
@@ -112,3 +117,22 @@ class TestAPI(APITestCase):
         resp = self.client.post(reverse('hazard_feed:activate_subscribe'),
                                 {"code": "12345678"}, format='json')
         print(resp.content)
+
+class TestUtils(APITestCase):
+    fixtures = ['hazard_levels']
+
+    def test_remove_level(self):
+        text = 'Оранжевый уровень опасности. Днем 10 сентября (четверг) на большей части территории республики ожидается усиление ветра порывами до 15-20 м/с.'
+        hazard_level = hazard_level_in_text_find(text)
+        self.assertEqual(remove_hazard_level_from_feed(hazard_level, text), 'Днем 10 сентября (четверг) на большей части территории республики ожидается усиление ветра порывами до 15-20 м/с.' )
+
+    def text_date_parser(self):
+        text = 'Днем 10 сентября (четверг) на большей части территории республики ожидается усиление ветра порывами до 15-20 м/с.'
+        date_start, date_end = date_from_text_parser('http://127.0.0.2:5000', text)
+        self.assertIsNone(date_start)
+        self.assertIsNone(date_end)
+        date_start, date_end = date_from_text_parser('http://127.0.0.1:5000/v1/parse-date', text)
+        d_s = d_n =  datetime.date(2020, 9, 10)
+        self.assertEqual(d_s, date_start)
+        self.assertEqual(d_n, date_end)
+

@@ -5,6 +5,7 @@ from redis import Redis
 import datetime
 from rq_scheduler import Scheduler
 
+
 redis_conn = Redis('default')
 q = Queue(connection=redis_conn)
 # queue = django_rq.get_queue('default')
@@ -21,8 +22,10 @@ def register_scheduled_jobs():
                            func='hazard_feed.jobs.parse_feeds',
                            interval=60*20)
 
-    class Command(BaseCommand):
 
-        def handle(self, *args, **options):
-            clear_scheduled_jobs()
-            register_scheduled_jobs()
+class Command(BaseCommand):
+
+    def handle(self, *args, **options):
+        clear_scheduled_jobs()
+        register_scheduled_jobs()
+
