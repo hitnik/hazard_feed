@@ -244,6 +244,10 @@ def date_from_text_parser(url, text):
     except requests.exceptions.ConnectionError:
         return None, None
 
+def send_email_async(msg, recipients):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(send_mail(msg, recipients))
 
 def remove_hazard_level_from_feed(hazard_level, text):
     result = ''
@@ -254,8 +258,3 @@ def remove_hazard_level_from_feed(hazard_level, text):
         if not re.search(hazard_level.title, sentence):
             result += sentence
     return result
-
-def send_email_async(msg, recipients):
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(send_mail(msg, recipients))

@@ -3,8 +3,9 @@ import asyncio
 from .utils import (
     parse_weather_feeds, put_feed_to_db,
     send_mail, get_weather_recipients, create_rss_urls_list,
-    Message, send_email_async
+    Message
     )
+from .utils import send_email_async
 
 @job
 def parse_feeds():
