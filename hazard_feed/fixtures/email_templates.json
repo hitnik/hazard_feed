@@ -22,5 +22,13 @@
       "title": "deactivation_code_mail",
       "template": "<p>Здравствуйте</p>\n<span> </span>\n<span> </span>\n<p>Для потверждения  отключения пописки на оповещения о неблагоприятных погодных явления вам был отправлен код</p>\n<span></span>\n<span></span>\n<p>Код деактивации: <b><strong>{{ code }}</strong></b></p>"
     }
+  },
+  {
+    "model": "hazard_feed.emailtemplates",
+    "pk": 4,
+    "fields": {
+      "title": "edit_validation_code_mail",
+      "template": "<p>Здравствуйте</p>\n<span> </span>\n<span> </span>\n<p>Для потверждения изменения подписки на оповещения о неблагоприятных погодных явления вам был отправлен код</p>\n<span></span>\n<span></span>\n<p>Код активации: <b><strong>{{ code }}</strong></b></p>"
+    }
   }
 ]

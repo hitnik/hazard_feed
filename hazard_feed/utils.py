@@ -1,14 +1,9 @@
 import re
 import feedparser
 import time
-import datetime
-import pytz
+import asyncio
 import requests
-from .models import (
-    HazardLevels, HazardFeeds,
-    WeatherRecipients, EmailTemplates,
-    RSSFeedUrl
-)
+from .models import *
 from django.conf import settings
 import aiosmtplib
 import nltk
@@ -103,8 +98,8 @@ def make_weather_hazard_message(feed):
     html = template.render(context)
     soup = BeautifulSoup(html, 'html.parser')
     text = soup.get_text()
-    msg = Message()
-    msg['From'] = settings.WEATHER_EMAIL_FROM
+    msg = EmailMessage()
+    msg['From'] = str(settings.WEATHER_EMAIL_FROM)
     msg['Subject'] = feed.title
     msg.set_content(text)
     msg.add_alternative(html, subtype='html')
@@ -112,8 +107,10 @@ def make_weather_hazard_message(feed):
 
 
 
-def get_weather_recipients():
-    return list(WeatherRecipients.objects.filter(is_active=True).values_list('email', flat=True))
+def get_weather_recipients(feed):
+    level = feed.hazard_level
+    recipients = list(level.weatherrecipients_set.all().values_list('email', flat=True))
+    return recipients
 
 
 async def send_mail(msg, recipients):
@@ -165,6 +162,7 @@ class Message():
     def __init__(self):
         self.activation_template = Template(EmailTemplates.objects.get(title='activation_code_mail').template)
         self.deactivation_template = Template(EmailTemplates.objects.get(title='deactivation_code_mail').template)
+        self.edit_validate_template = Template(EmailTemplates.objects.get(title='edit_validation_code_mail').template)
 
     @classmethod
     def email_weather_hazard(cls, feed):
@@ -211,6 +209,19 @@ class Message():
     def email_deactivation_code(cls, code):
         return cls()._email_code(code, activate=False)
 
+    @classmethod
+    def email_validate_edit_code(cls, code):
+        template = cls().edit_validate_template
+        context = Context({'code': code})
+        html = template.render(context)
+        soup = BeautifulSoup(html, 'html.parser')
+        text = soup.get_text()
+        msg = EmailMessage()
+        msg['From'] = settings.WEATHER_EMAIL_FROM
+        msg['Subject'] = 'Код подтверждения'
+        msg.set_content(text)
+        msg.add_alternative(html, subtype='html')
+        return msg
 
 def datetime_parser(json_dict):
     for (key, value) in json_dict.items():
@@ -243,3 +254,8 @@ def remove_hazard_level_from_feed(hazard_level, text):
         if not re.search(hazard_level.title, sentence):
             result += sentence
     return result
+
+def send_email_async(msg, recipients):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(send_mail(msg, recipients))

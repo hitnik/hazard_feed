@@ -17,6 +17,10 @@ class WeatherRecipientsMailSerializer(serializers.Serializer):
 class SubscribeSerialiser(serializers.Serializer):
     title = serializers.CharField(required=True, allow_blank=False)
     email = serializers.EmailField(required=True, allow_blank=False, validators=[EmailValidator])
+    hazard_levels = serializers.MultipleChoiceField(required=True,
+                                                    allow_blank=False,
+                                                    choices=HazardLevels.objects.all().values_list('id', flat=True)
+                                                    )
 
     def create(self, validated_data):
         return validated_data
@@ -30,7 +34,7 @@ class ActivationCodeSerializer(serializers.Serializer):
     code = serializers.CharField(required=False, allow_blank=True,
                                  max_length=settings.ACTIVATION_CODE_LENTH,
                                  min_length=settings.ACTIVATION_CODE_LENTH)
-    token = serializers.CharField(required=True)
+    target_uid = serializers.CharField(required=True)
 
     def create(self, validated_data):
         return validated_data
@@ -45,7 +49,7 @@ class ActivationCodeSerializer(serializers.Serializer):
 class SubcribeResponseSerializer(serializers.Serializer):
 
     expires = serializers.DateTimeField()
-    token = serializers.CharField()
+    target_uid = serializers.CharField()
     code_confirm = serializers.URLField()
 
 class SuccesResponseSerializer(serializers.Serializer):
@@ -70,3 +74,8 @@ class HazardWarningsSerializer(serializers.HyperlinkedModelSerializer):
         extra_kwargs = {
             'hazard_level': {'view_name': 'hazard_feed:hazard_levels-detail'},
         }
+
+class WeatherRecipientsModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeatherRecipients
+        fields = ['title', 'email', 'hazard_levels']
