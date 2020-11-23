@@ -18,7 +18,7 @@ except:
 
 setuptools.setup(
     name="hazard-feed",
-    version="0.1.6.2",
+    version="0.1.6.9",
     author="Aleksandr Nikitin",
     author_email="hitnik@gmail.com",
     description="pogoda.by storm warning rss parser",
@@ -26,6 +26,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/hitnik/hazard_feed",
     packages=setuptools.find_packages(),
+    include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: BSD License",

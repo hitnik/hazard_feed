@@ -1,1 +1,0 @@
-WEATHER_FEED_URL = 'http://www.pogoda.by/rss2/storm.php'

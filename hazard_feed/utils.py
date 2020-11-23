@@ -258,3 +258,5 @@ def remove_hazard_level_from_feed(hazard_level, text):
         if not re.search(hazard_level.title, sentence):
             result += sentence
     return result
+
+
