@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import WeatherRecipients, HazardFeeds, HazardLevels
 from django.conf import settings
 from django.core.validators import EmailValidator
-
+from django.db.utils import OperationalError
 
 class WeatherRecipientsMailSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True, allow_blank=False)
@@ -17,10 +17,13 @@ class WeatherRecipientsMailSerializer(serializers.Serializer):
 class SubscribeSerialiser(serializers.Serializer):
     title = serializers.CharField(required=True, allow_blank=False)
     email = serializers.EmailField(required=True, allow_blank=False, validators=[EmailValidator])
-    hazard_levels = serializers.MultipleChoiceField(required=True,
+    try:
+        hazard_levels = serializers.MultipleChoiceField(required=True,
                                                     allow_blank=False,
                                                     choices=HazardLevels.objects.all().values_list('id', flat=True)
                                                     )
+    except OperationalError:
+        pass
 
     def create(self, validated_data):
         return validated_data
