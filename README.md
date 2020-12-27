@@ -44,4 +44,4 @@ Quick start
 7. For websocket works add channels redis and configure 
 it as channels documentation 		
 
-7. Run `python manage.py migrate` to create the azard_feed models.
+8. Run `python manage.py migrate` to create the azard_feed models.
