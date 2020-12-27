@@ -16,6 +16,7 @@ from hazard_feed.jobs import (send_email_code_activate, send_email_code_deactiva
                               )
 
 
+
 class NewsletterSubscribeAPIView(generics.GenericAPIView):
     serializer_class = SubscribeSerialiser
     validate_url = reverse_lazy('hazard_feed:validate_subscribe')

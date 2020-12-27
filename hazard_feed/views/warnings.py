@@ -3,7 +3,7 @@ from rest_framework.pagination import PageNumberPagination
 from ..models import  HazardFeeds, HazardLevels
 from ..serializers import HazardWarningsSerializer, HazardLevelModelSerializer
 from django_filters import rest_framework as filters
-
+from django.views.generic import TemplateView
 
 class HazardWarningsPageNumberPagination(PageNumberPagination):
     page_size = 5
@@ -32,5 +32,6 @@ class HazardWarningsAPIViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = DateFilterSet
 
-
+class WSTestView(TemplateView):
+    template_name = 'hazard_feed/ws.html'
 

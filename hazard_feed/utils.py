@@ -4,6 +4,7 @@ import time
 import asyncio
 import requests
 from .models import *
+from .serializers import HazardWarningsWSSerializer
 from django.conf import settings
 import aiosmtplib
 import nltk
@@ -18,7 +19,10 @@ from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 from .config import WEATHER_FEED_URL
 from django.contrib.sessions.models import Session
-
+from .models import HazardFeeds
+from channels.db import database_sync_to_async
+from channels.layers import get_channel_layer
+from asgiref.sync import sync_to_async
 
 def hazard_level_in_text_find(text):
     """
@@ -223,6 +227,7 @@ class Message():
         msg.add_alternative(html, subtype='html')
         return msg
 
+
 def datetime_parser(json_dict):
     for (key, value) in json_dict.items():
         try:
@@ -230,6 +235,7 @@ def datetime_parser(json_dict):
         except (ValueError, AttributeError):
             pass
     return json_dict
+
 
 def date_from_text_parser(url, text):
     try:
@@ -255,7 +261,42 @@ def remove_hazard_level_from_feed(hazard_level, text):
             result += sentence
     return result
 
+
 def send_email_async(msg, recipients):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     loop.run_until_complete(send_mail(msg, recipients))
+
+
+@database_sync_to_async
+def get_feeds_from_db():
+    date = datetime.datetime.now().date()
+    feeds = HazardFeeds.objects.filter(date_start__gte=date, date_end__gte=date)
+    serializer = HazardWarningsWSSerializer(feeds, many=True)
+    if not serializer.data:
+        return None
+    return serializer.data
+
+async def get_actial_hazard_feeds() -> json:
+    return await get_feeds_from_db()
+
+
+async def send_weather_ws():
+    content = {'response': 'ok'}
+    payload = await get_actial_hazard_feeds()
+    content.update({'payload': payload})
+
+    if content:
+        layer = get_channel_layer()
+        await layer.group_send(
+            'weather',
+            {
+                'type': 'weather.notify',
+                'content': content
+            }
+        )
+
+
+
+
+

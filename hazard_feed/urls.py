@@ -17,4 +17,5 @@ urlpatterns = [
     path('v1/validate-edit', EditValidationApiView.as_view(), name='validate_edit'),
     path('v1/weather-recipients', WeatherRecipientsRetrieveAPIView.as_view(), name='weather_recipients'),
     path('v1/', include(router.urls)),
+    path('test/', WSTestView.as_view(), name='ws_test')
 ]

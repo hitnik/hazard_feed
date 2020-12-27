@@ -13,12 +13,16 @@ class HazardFeedConfig(AppConfig):
      app settings. You must specify settings in your environment
     """
     name = 'hazard_feed'
-    WEATHER_EMAIL_SMTP_HOST = os.getenv('WEATHER_EMAIL_SMTP_HOST')
-    WEATHER_USE_TSL = int(os.getenv('WEATHER_USE_TSL', 0))
-    WEATHER_EMAIL_SMTP_PORT = os.getenv('WEATHER_EMAIL_SMTP_PORT')
-    WEATHER_EMAIL_HOST_USER = os.getenv('WEATHER_EMAIL_HOST_USER')
-    WEATHER_EMAIL_HOST_PASSWORD = os.getenv('WEATHER_EMAIL_HOST_PASSWORD')
-
+    # WEATHER_EMAIL_SMTP_HOST = os.getenv('WEATHER_EMAIL_SMTP_HOST')
+    # WEATHER_USE_TSL = int(os.getenv('WEATHER_USE_TSL', 0))
+    # WEATHER_EMAIL_SMTP_PORT = os.getenv('WEATHER_EMAIL_SMTP_PORT')
+    # WEATHER_EMAIL_HOST_USER = os.getenv('WEATHER_EMAIL_HOST_USER')
+    # WEATHER_EMAIL_HOST_PASSWORD = os.getenv('WEATHER_EMAIL_HOST_PASSWORD')
+    WEATHER_EMAIL_SMTP_HOST = 'smtp.gmail.com'
+    WEATHER_USE_TSL = 1
+    WEATHER_EMAIL_SMTP_PORT = 465
+    WEATHER_EMAIL_HOST_USER = 'hitnik@gmail.com'
+    WEATHER_EMAIL_HOST_PASSWORD = 'ku$1onJwl'
 
     def ready(self):
 

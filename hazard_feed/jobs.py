@@ -3,7 +3,7 @@ import asyncio
 from .utils import (
     parse_weather_feeds, put_feed_to_db,
     send_mail, get_weather_recipients, create_rss_urls_list,
-    Message, send_email_async
+    Message, send_email_async, send_weather_ws
     )
 
 @job
@@ -17,9 +17,16 @@ def parse_feeds():
 def send_weather_notification(feed):
     recipients = get_weather_recipients(feed)
     msg = Message.email_weather_hazard(feed)
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    loop.run_until_complete(send_mail(msg, recipients))
+    # loop = asyncio.new_event_loop()
+    # asyncio.set_event_loop(loop)
+    # loop.run_until_complete(send_mail(msg, recipients))
+    async def run():
+        await asyncio.gather(
+            send_mail(msg, recipients),
+            send_weather_ws(),
+        )
+    asyncio.run(run())
+
 
 @job
 def send_email_code_activate(code, recipients):
@@ -35,4 +42,5 @@ def send_email_code_deactivate(code, recipients):
 def send_email_code_edit(code, recipients):
     msg = Message.email_validate_edit_code(code)
     send_email_async(msg, recipients)
+
 
