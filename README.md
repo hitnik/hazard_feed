@@ -39,6 +39,9 @@ Quick start
 			
 5. Define django_rq settings
 
-6. Start rqworker and rqscheduler			
+6. Start rqworker and rqscheduler
+
+7. For websocket works add channels redis and configure 
+it as channels documentation 		
 
 7. Run `python manage.py migrate` to create the azard_feed models.
