@@ -271,7 +271,7 @@ def send_email_async(msg, recipients):
 @database_sync_to_async
 def get_feeds_from_db():
     date = datetime.datetime.now().date()
-    feeds = HazardFeeds.objects.filter(date_start__gte=date, date_end__gte=date)
+    feeds = HazardFeeds.objects.filter(date_start__gte=date, date_end__gte=date).order_by('date_end').reverse()
     serializer = HazardWarningsWSSerializer(feeds, many=True)
     if not serializer.data:
         return None

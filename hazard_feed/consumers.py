@@ -1,6 +1,6 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 from .utils import get_actial_hazard_feeds
-
+from json.decoder import JSONDecodeError
 
 class WeatherJsonConsumer(AsyncJsonWebsocketConsumer):
     """
@@ -17,6 +17,7 @@ class WeatherJsonConsumer(AsyncJsonWebsocketConsumer):
     """
     group_name = 'weather'
     response = {'response': 'ok'}
+    response_error = {'response': 'fail'}
     ping_response = dict(response, payload='pong')
     empty_response = dict(response, payload='empty')
 
@@ -46,11 +47,24 @@ class WeatherJsonConsumer(AsyncJsonWebsocketConsumer):
     async def receive_json(self, content):
         # receive messages from socket
 
-        if content['payload'] == 'feeds':
-            await self.send_weather_response()
-            return
-        await self.send_ping_response()
+        try: 
 
+            if content['payload'] == 'feeds':
+                await self.send_weather_response()
+                return
+            await self.send_ping_response()
+        except JSONDecodeError :
+            await self.send_err_reponse()
+
+
+    async def send_err_reponse(self):
+        # send fail response
+        await self.channel_layer.send(self.channel_name,
+              {
+                  'type': 'weather.notify',
+                  'content': self.response_error
+              }
+              )
 
 
     async def send_ping_response(self):

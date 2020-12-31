@@ -3,6 +3,7 @@ from rest_framework.pagination import PageNumberPagination
 from ..models import  HazardFeeds, HazardLevels
 from ..serializers import HazardWarningsSerializer, HazardLevelModelSerializer
 from django_filters import rest_framework as filters
+from django_filters.fields import DateRangeField
 from django.views.generic import TemplateView
 
 class HazardWarningsPageNumberPagination(PageNumberPagination):
@@ -18,8 +19,8 @@ class HazardLevelsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class DateFilterSet(filters.FilterSet):
-    date_end = filters.DateFromToRangeFilter()
-    date_start = filters.DateFromToRangeFilter()
+    date_end = DateRangeField()
+    date_start = DateRangeField()
 
     class Meta:
         model = HazardFeeds
@@ -31,6 +32,7 @@ class HazardWarningsAPIViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = HazardWarningsPageNumberPagination
     filter_backends = [filters.DjangoFilterBackend]
     filterset_class = DateFilterSet
+
 
 class WSTestView(TemplateView):
     template_name = 'hazard_feed/ws.html'

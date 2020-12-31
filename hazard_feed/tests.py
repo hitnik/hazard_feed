@@ -291,8 +291,8 @@ class WSTests(ChannelsLiveServerTestCase):
             )
 
             recipient = WeatherRecipients.objects.create(
-                email='hitnik@gmail.com',
-                title='hitnik',
+                email='',
+                title='',
                 is_active=True,
             )
 
