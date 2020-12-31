@@ -19,8 +19,8 @@ class HazardLevelsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class DateFilterSet(filters.FilterSet):
-    date_end = DateRangeField()
-    date_start = DateRangeField()
+    date_end = filters.DateFromToRangeFilter()
+    date_start = filters.DateFromToRangeFilter()
 
     class Meta:
         model = HazardFeeds
